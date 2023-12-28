@@ -33,6 +33,7 @@ from keras.optimizers import Adam
 from melodyGenerator import MelodyGenerator
 from melodyPreprocessor import MelodyPreprocessor
 from transformer import Transformer
+from music21 import metadata, note, stream
 
 # Global parameters
 EPOCHS = 10
@@ -60,7 +61,7 @@ def train(train_dataset, transformer, epochs):
     for epoch in range(epochs):
         total_loss = 0
         # Iterate over each batch in the training dataset
-        for (batch, (input, target)) in enumerate(train_dataset):
+        for batch, (input, target) in enumerate(train_dataset):
             # Perform a single training step
             batch_loss = _train_step(input, target, transformer)
             total_loss += batch_loss
@@ -106,6 +107,7 @@ def _train_step(input, target, transformer):
     # Return the computed loss for this training step
     return loss
 
+
 def _calculate_loss(real, pred):
     """
     Computes the loss between the real and predicted sequences
@@ -138,6 +140,7 @@ def _calculate_loss(real, pred):
 
     return average_loss
 
+
 def _right_pad_sequence_once(sequence):
     """
     Pads a sequence with a single zero at the end
@@ -149,6 +152,38 @@ def _right_pad_sequence_once(sequence):
         tf.Tensor: The padded sequence
     """
     return tf.pad(sequence, [[0, 0], [0, 1]], "CONSTANT")
+
+
+def visualize_melody(melody):
+    """
+    Visualize a sequence of (pitch, duration) pairs using music21.
+
+    Parameters:
+        melody (str): A str of "pitch-duration" substrings separated by whitespaces.
+    """
+
+    note_list = melody.split()
+
+    note_tuples = []
+
+    for note_duration_str in note_list:
+        temp_list = note_duration_str.split("-")
+        pitch = temp_list[0]
+        duration = int(float(temp_list[1]))
+        note_tuples.append((pitch, duration))
+
+    melody = note_tuples
+
+    print("my melody: ", melody)
+
+    score = stream.Score()
+    score.metadata = metadata.Metadata(title="Transformer Melody")
+    part = stream.Part()
+    for n, d in melody:
+        part.append(note.Note(n, quarterLength=d))
+    score.append(part)
+    score.show()
+
 
 if __name__ == "__main__":
     melody_preprocessor = MelodyPreprocessor(DATA_PATH, batch_size=BATCH_SIZE)
@@ -164,15 +199,14 @@ if __name__ == "__main__":
         target_vocab_size=vocab_size,
         max_num_positions_in_pe_encoder=MAX_POSITIONS_IN_POSITIONAL_ENCODING,
         max_num_positions_in_pe_decoder=MAX_POSITIONS_IN_POSITIONAL_ENCODING,
-        dropout_rate=0.1
+        dropout_rate=0.1,
     )
 
     train(train_dataset, transformer_model, EPOCHS)
 
     print("Generating a melody...")
-    melody_generator = MelodyGenerator(
-        transformer_model, melody_preprocessor.tokenizer
-    )
+    melody_generator = MelodyGenerator(transformer_model, melody_preprocessor.tokenizer)
     start_sequence = ["C4-1.0", "D4-1.0", "E4-1.0", "C4-1.0"]
     new_melody = melody_generator.generate(start_sequence)
     print(f"Generated melody: {new_melody}")
+    visualize_melody(new_melody)
