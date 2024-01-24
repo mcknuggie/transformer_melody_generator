@@ -144,16 +144,6 @@ class Transformer(tf.keras.Model):
         variables, weights, and a bias value.
         """
 
-        # self.num_layers = num_layers
-        # self.d_model = d_model
-        # self.num_heads = num_heads
-        # self.d_feedforward = d_feedforward
-        # self.input_vocab_size = input_vocab_size
-        # self.target_vocab_size = target_vocab_size
-        # self.max_num_positions_in_pe_encoder = max_num_positions_in_pe_encoder
-        # self.max_num_positions_in_pe_decoder = max_num_positions_in_pe_decoder
-        # self.dropout_rate = dropout_rate
-
     def call(
         self,
         input,
@@ -181,12 +171,6 @@ class Transformer(tf.keras.Model):
             dict: Attention weights from the Decoder layers
         """
 
-        # input = inputs[0]
-        # target = inputs[1]
-        # enc_padding_mask = mask[0]
-        # look_ahead_mask = mask[1]
-        # dec_padding_mask = mask[2]
-
         enc_output = self.encoder(
             input, training, enc_padding_mask
         )  # (batch_size, input_seq_len, d_model)
@@ -205,23 +189,6 @@ class Transformer(tf.keras.Model):
         """
 
         return logits
-
-    # def get_config(self):
-    #     config = super(Transformer, self).get_config()
-    #     config.update(
-    #         {
-    #             "num_layers": self.num_layers,
-    #             "d_model": self.d_model,
-    #             "num_heads": self.num_heads,
-    #             "d_feedforward": self.d_feedforward,
-    #             "input_vocab_size": self.input_vocab_size,
-    #             "target_vocab_size": self.target_vocab_size,
-    #             "max_num_positions_in_pe_encoder": self.max_num_positions_in_pe_encoder,
-    #             "max_num_positions_in_pe_decoder": self.max_num_positions_in_pe_decoder,
-    #             "dropout_rate": self.dropout_rate,
-    #         }
-    #     )
-    #     return config
 
 
 class Encoder(tf.keras.layers.Layer):

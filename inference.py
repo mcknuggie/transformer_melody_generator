@@ -45,30 +45,9 @@ def visualize_melody(melody):
 
 
 if __name__ == "__main__":
-    # model = models.load_model(
-    #     "model.keras", custom_objects={"Transformer": Transformer}
-    # )
-
     melody_preprocessor = MelodyPreprocessor(DATA_PATH, batch_size=BATCH_SIZE)
     train_dataset = melody_preprocessor.create_training_dataset()
     vocab_size = melody_preprocessor.number_of_tokens_with_padding
-
-    # Heres the model you made before, notice it does not train.
-    # model = Transformer(
-    #     num_layers=2,
-    #     d_model=64,
-    #     num_heads=2,
-    #     d_feedforward=128,
-    #     input_vocab_size=vocab_size,
-    #     target_vocab_size=vocab_size,
-    #     max_num_positions_in_pe_encoder=MAX_POSITIONS_IN_POSITIONAL_ENCODING,
-    #     max_num_positions_in_pe_decoder=MAX_POSITIONS_IN_POSITIONAL_ENCODING,
-    #     dropout_rate=0.1,
-    # )
-
-    # train(train_dataset, model, 0)
-
-    # model.load_weights("model_weights")
 
     model = models.load_model("model", custom_objects={"Transformer": Transformer})
 

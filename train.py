@@ -93,8 +93,6 @@ def _train_step(input, target, transformer):
     with tf.GradientTape() as tape:
         # Forward pass through the transformer model
         # TODO: Add padding mask for encoder + decoder and look-ahead mask for decoder
-        # inputs = [input, target_input]
-        # masks = [None, None, None]
         predictions = transformer(input, target_input, True, None, None, None)
         # predictions = transformer(inputs, True, masks)
 
@@ -178,16 +176,3 @@ if __name__ == "__main__":
     train(train_dataset, transformer_model, EPOCHS)
 
     transformer_model.save("model")
-    # transformer_model.save("model.keras")
-
-    # transformer_model.save_weights("model_weights", overwrite=True)
-    # transformer_model.load_weights("model_weights")
-
-    # print("Generating a melody...")
-
-    # melody_generator = MelodyGenerator(transformer_model, melody_preprocessor.tokenizer)
-    # start_sequence = ["C4-1.0", "D4-1.0", "E4-1.0", "C4-1.0"]
-    # new_melody = melody_generator.generate(start_sequence)
-
-    # print(f"Generated melody: {new_melody}")
-    # visualize_melody(new_melody)

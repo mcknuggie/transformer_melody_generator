@@ -103,9 +103,6 @@ class MelodyGenerator:
         Returns:
             predicted_note (int): The index of the predicted note
         """
-        # print("predictions.shape: ", predictions.shape)
-        # tf.print(predictions)
-
         latest_predictions = predictions[:, -1, :]
         predicted_note_index = tf.argmax(latest_predictions, axis=1)
         predicted_note = predicted_note_index.numpy()[0]
@@ -134,7 +131,5 @@ class MelodyGenerator:
             generated_melody (str): The decoded sequence of notes
         """
         generated_sequence_array = generated_sequence.numpy()
-        generated_melody = self.tokenizer.sequences_to_texts(generated_sequence_array)[
-            0
-        ]
+        generated_melody = self.tokenizer.sequences_to_texts(generated_sequence_array)[0]
         return generated_melody
