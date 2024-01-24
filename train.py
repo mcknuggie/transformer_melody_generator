@@ -30,16 +30,17 @@ and generating a sample melody using the trained model
 import tensorflow as tf
 from keras.losses import SparseCategoricalCrossentropy
 from keras.optimizers import Adam
-from melodyGenerator import MelodyGenerator
 from melodyPreprocessor import MelodyPreprocessor
 from transformer import Transformer
-from music21 import metadata, note, stream
+from melodyGenerator import MelodyGenerator
+from keras.preprocessing.text import Tokenizer
 
 # Global parameters
 EPOCHS = 10
 BATCH_SIZE = 32
-DATA_PATH = "dataset.json"
-MAX_POSITIONS_IN_POSITIONAL_ENCODING = 100
+DATA_PATH = "essenDataset.json"
+# MAX_POSITIONS_IN_POSITIONAL_ENCODING = 100
+MAX_POSITIONS_IN_POSITIONAL_ENCODING = 1500
 
 # Loss function and optimizer
 sparse_categorical_crossentropy = SparseCategoricalCrossentropy(
@@ -92,7 +93,10 @@ def _train_step(input, target, transformer):
     with tf.GradientTape() as tape:
         # Forward pass through the transformer model
         # TODO: Add padding mask for encoder + decoder and look-ahead mask for decoder
+        # inputs = [input, target_input]
+        # masks = [None, None, None]
         predictions = transformer(input, target_input, True, None, None, None)
+        # predictions = transformer(inputs, True, masks)
 
         # Compute loss between the real output and the predictions
         loss = _calculate_loss(target_real, predictions)
@@ -154,37 +158,6 @@ def _right_pad_sequence_once(sequence):
     return tf.pad(sequence, [[0, 0], [0, 1]], "CONSTANT")
 
 
-def visualize_melody(melody):
-    """
-    Visualize a sequence of (pitch, duration) pairs using music21.
-
-    Parameters:
-        melody (str): A str of "pitch-duration" substrings separated by whitespaces.
-    """
-
-    note_list = melody.split()
-
-    note_tuples = []
-
-    for note_duration_str in note_list:
-        temp_list = note_duration_str.split("-")
-        pitch = temp_list[0]
-        duration = int(float(temp_list[1]))
-        note_tuples.append((pitch, duration))
-
-    melody = note_tuples
-
-    print("my melody: ", melody)
-
-    score = stream.Score()
-    score.metadata = metadata.Metadata(title="Transformer Melody")
-    part = stream.Part()
-    for n, d in melody:
-        part.append(note.Note(n, quarterLength=d))
-    score.append(part)
-    score.show()
-
-
 if __name__ == "__main__":
     melody_preprocessor = MelodyPreprocessor(DATA_PATH, batch_size=BATCH_SIZE)
     train_dataset = melody_preprocessor.create_training_dataset()
@@ -204,9 +177,17 @@ if __name__ == "__main__":
 
     train(train_dataset, transformer_model, EPOCHS)
 
-    print("Generating a melody...")
-    melody_generator = MelodyGenerator(transformer_model, melody_preprocessor.tokenizer)
-    start_sequence = ["C4-1.0", "D4-1.0", "E4-1.0", "C4-1.0"]
-    new_melody = melody_generator.generate(start_sequence)
-    print(f"Generated melody: {new_melody}")
-    visualize_melody(new_melody)
+    transformer_model.save("model")
+    # transformer_model.save("model.keras")
+
+    # transformer_model.save_weights("model_weights", overwrite=True)
+    # transformer_model.load_weights("model_weights")
+
+    # print("Generating a melody...")
+
+    # melody_generator = MelodyGenerator(transformer_model, melody_preprocessor.tokenizer)
+    # start_sequence = ["C4-1.0", "D4-1.0", "E4-1.0", "C4-1.0"]
+    # new_melody = melody_generator.generate(start_sequence)
+
+    # print(f"Generated melody: {new_melody}")
+    # visualize_melody(new_melody)

@@ -144,6 +144,16 @@ class Transformer(tf.keras.Model):
         variables, weights, and a bias value.
         """
 
+        # self.num_layers = num_layers
+        # self.d_model = d_model
+        # self.num_heads = num_heads
+        # self.d_feedforward = d_feedforward
+        # self.input_vocab_size = input_vocab_size
+        # self.target_vocab_size = target_vocab_size
+        # self.max_num_positions_in_pe_encoder = max_num_positions_in_pe_encoder
+        # self.max_num_positions_in_pe_decoder = max_num_positions_in_pe_decoder
+        # self.dropout_rate = dropout_rate
+
     def call(
         self,
         input,
@@ -151,7 +161,7 @@ class Transformer(tf.keras.Model):
         training,
         enc_padding_mask,
         look_ahead_mask,
-        dec_padding_mask,
+        dec_padding_mask
     ):
         """
         Process the input through the Transformer model. (forward pass)
@@ -170,6 +180,13 @@ class Transformer(tf.keras.Model):
             Tensor: The final output of the Transformer
             dict: Attention weights from the Decoder layers
         """
+
+        # input = inputs[0]
+        # target = inputs[1]
+        # enc_padding_mask = mask[0]
+        # look_ahead_mask = mask[1]
+        # dec_padding_mask = mask[2]
+
         enc_output = self.encoder(
             input, training, enc_padding_mask
         )  # (batch_size, input_seq_len, d_model)
@@ -183,11 +200,28 @@ class Transformer(tf.keras.Model):
         )  # (batch_size, target_seq_len, target_vocab_size)
         """
         A logit is just a score or a probability that is associated with
-        an item (word or a note) in a sequnce. It is the probability that the 
-        next item in the sequence will the associated word/note.
+        an item (word or a note) in a sequence. It is the probability that the 
+        next item in the sequence will crysalize into the associated word/note.
         """
 
         return logits
+
+    # def get_config(self):
+    #     config = super(Transformer, self).get_config()
+    #     config.update(
+    #         {
+    #             "num_layers": self.num_layers,
+    #             "d_model": self.d_model,
+    #             "num_heads": self.num_heads,
+    #             "d_feedforward": self.d_feedforward,
+    #             "input_vocab_size": self.input_vocab_size,
+    #             "target_vocab_size": self.target_vocab_size,
+    #             "max_num_positions_in_pe_encoder": self.max_num_positions_in_pe_encoder,
+    #             "max_num_positions_in_pe_decoder": self.max_num_positions_in_pe_decoder,
+    #             "dropout_rate": self.dropout_rate,
+    #         }
+    #     )
+    #     return config
 
 
 class Encoder(tf.keras.layers.Layer):
@@ -213,7 +247,7 @@ class Encoder(tf.keras.layers.Layer):
             input_vocab_size (int): Size of the input vocabulary
             maximum_positions_in_pe (int): The Maximum sequence length that this model
                 might ever be used with
-            dropout_rate (float): Dropout dropout_rate
+            dropout_rate (float): Dropout rate
         """
         super(Encoder, self).__init__()
         self.d_model = d_model

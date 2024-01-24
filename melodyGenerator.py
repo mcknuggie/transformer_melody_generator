@@ -31,6 +31,7 @@ trained for melody generation tasks.
 
 import tensorflow as tf
 
+
 class MelodyGenerator:
     """
     Class to generate melodies using a trained Transformer model.
@@ -45,7 +46,7 @@ class MelodyGenerator:
 
         Parameters:
             transformer (Transformer): The trained transformer model
-            tokenizer (Tokenizer): Tokenizer used for encoding melodies (to convert from numbers, 
+            tokenizer (Tokenizer): Tokenizer used for encoding melodies (to convert from numbers,
                 back to note symbols)
             max_length (int): Maximum length of the generated melodies
         """
@@ -72,14 +73,12 @@ class MelodyGenerator:
                 input_tensor, input_tensor, False, None, None, None
             )
             predicted_note = self._get_note_with_highest_score(predictions)
-            input_tensor = self._append_predicted_note(
-                input_tensor, predicted_note
-            )
-        
+            input_tensor = self._append_predicted_note(input_tensor, predicted_note)
+
         generated_melody = self._decode_generated_sequence(input_tensor)
 
         return generated_melody
-    
+
     def _get_input_tensor(self, start_sequence):
         """
         Gets the input tensor for the Transformer model
@@ -93,22 +92,25 @@ class MelodyGenerator:
         input_sequence = self.tokenizer.texts_to_sequences([start_sequence])
         input_tensor = tf.convert_to_tensor(input_sequence, dtype=tf.int64)
         return input_tensor
-    
+
     def _get_note_with_highest_score(self, predictions):
         """
         Gets the note with the highest score from the predictions
 
         Parameters:
-            predictions (tf.Tensor): The predicitions from the model
+            predictions (tf.Tensor): The predictions from the model
 
         Returns:
             predicted_note (int): The index of the predicted note
         """
+        # print("predictions.shape: ", predictions.shape)
+        # tf.print(predictions)
+
         latest_predictions = predictions[:, -1, :]
         predicted_note_index = tf.argmax(latest_predictions, axis=1)
         predicted_note = predicted_note_index.numpy()[0]
         return predicted_note
-    
+
     def _append_predicted_note(self, input_tensor, predicted_note):
         """
         Appends the predicted note to the input tensor
@@ -120,7 +122,7 @@ class MelodyGenerator:
             (tf.Tensor): The input tensor for the model
         """
         return tf.concat([input_tensor, [[predicted_note]]], axis=-1)
-    
+
     def _decode_generated_sequence(self, generated_sequence):
         """
         Decodes the generated sequence of notes
@@ -132,5 +134,7 @@ class MelodyGenerator:
             generated_melody (str): The decoded sequence of notes
         """
         generated_sequence_array = generated_sequence.numpy()
-        generated_melody = self.tokenizer.sequences_to_texts(generated_sequence_array)[0]
+        generated_melody = self.tokenizer.sequences_to_texts(generated_sequence_array)[
+            0
+        ]
         return generated_melody
