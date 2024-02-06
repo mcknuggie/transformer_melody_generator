@@ -36,10 +36,9 @@ from melodyGenerator import MelodyGenerator
 from keras.preprocessing.text import Tokenizer
 
 # Global parameters
-EPOCHS = 10
+EPOCHS = 3
 BATCH_SIZE = 32
 DATA_PATH = "essenDataset.json"
-# MAX_POSITIONS_IN_POSITIONAL_ENCODING = 100
 MAX_POSITIONS_IN_POSITIONAL_ENCODING = 1500
 
 # Loss function and optimizer
@@ -63,14 +62,27 @@ def train(train_dataset, transformer, epochs):
         total_loss = 0
         # Iterate over each batch in the training dataset
         for batch, (input, target) in enumerate(train_dataset):
+            # Create masks
+            enc_padding_mask, combined_mask, dec_padding_mask = create_masks(
+                input, target
+            )
             # Perform a single training step
-            batch_loss = _train_step(input, target, transformer)
+            batch_loss = _train_step(
+                input,
+                target,
+                transformer,
+                enc_padding_mask,
+                combined_mask,
+                dec_padding_mask,
+            )
             total_loss += batch_loss
             print(f"Epoch {epoch + 1} Batch {batch + 1} Loss {batch_loss.numpy()}")
 
 
 @tf.function
-def _train_step(input, target, transformer):
+def _train_step(
+    input, target, transformer, enc_padding_mask, look_ahead_mask, dec_padding_mask
+):
     """
     Performs a single training step for the Transformer model
 
@@ -92,9 +104,14 @@ def _train_step(input, target, transformer):
     # during the forward pass, which enables auto-differentiation
     with tf.GradientTape() as tape:
         # Forward pass through the transformer model
-        # TODO: Add padding mask for encoder + decoder and look-ahead mask for decoder
-        predictions = transformer(input, target_input, True, None, None, None)
-        # predictions = transformer(inputs, True, masks)
+        predictions = transformer(
+            input,
+            target_input,
+            True,
+            enc_padding_mask,
+            look_ahead_mask,
+            dec_padding_mask,
+        )
 
         # Compute loss between the real output and the predictions
         loss = _calculate_loss(target_real, predictions)
@@ -156,6 +173,25 @@ def _right_pad_sequence_once(sequence):
     return tf.pad(sequence, [[0, 0], [0, 1]], "CONSTANT")
 
 
+def create_masks(input, target):
+    enc_padding_mask = create_padding_mask(input)
+    dec_padding_mask = create_padding_mask(input)
+    look_ahead_mask = create_look_ahead_mask(tf.shape(target)[1])
+    dec_target_padding_mask = create_padding_mask(target)
+    combined_mask = tf.maximum(dec_target_padding_mask, look_ahead_mask)
+    return enc_padding_mask, combined_mask, dec_padding_mask
+
+
+def create_padding_mask(seq):
+    seq = tf.cast(tf.math.equal(seq, 0), tf.float32)
+    return seq[:, tf.newaxis, tf.newaxis, :]
+
+
+def create_look_ahead_mask(size):
+    mask = 1 - tf.linalg.band_part(tf.ones((size, size)), -1, 0)
+    return mask
+
+
 if __name__ == "__main__":
     melody_preprocessor = MelodyPreprocessor(DATA_PATH, batch_size=BATCH_SIZE)
     train_dataset = melody_preprocessor.create_training_dataset()
@@ -175,4 +211,4 @@ if __name__ == "__main__":
 
     train(train_dataset, transformer_model, EPOCHS)
 
-    transformer_model.save("model")
+    transformer_model.save("essen_model_3_epochs_lookahead_mask")

@@ -1,12 +1,11 @@
 from melodyGenerator import MelodyGenerator
 from music21 import metadata, note, stream
 from keras.preprocessing.text import Tokenizer
-from keras import models, Model
+from keras import models
 from transformer import Transformer
 from melodyPreprocessor import MelodyPreprocessor
 
 DATA_PATH = "dataset.json"
-MAX_POSITIONS_IN_POSITIONAL_ENCODING = 100
 BATCH_SIZE = 32
 
 
@@ -49,12 +48,15 @@ if __name__ == "__main__":
     train_dataset = melody_preprocessor.create_training_dataset()
     vocab_size = melody_preprocessor.number_of_tokens_with_padding
 
-    model = models.load_model("model", custom_objects={"Transformer": Transformer})
+    model = models.load_model(
+        "essen_model_3_epochs_lookahead_mask",
+        custom_objects={"Transformer": Transformer},
+    )
 
     print("Generating a melody...")
 
     melody_generator = MelodyGenerator(model, melody_preprocessor.tokenizer)
-    start_sequence = ["C4-1.0", "D4-1.0", "E4-1.0", "C4-1.0"]
+    start_sequence = ["D4-1.0", "E4-1.0", "F#4-1.0", "E4-1.0"]
     new_melody = melody_generator.generate(start_sequence)
 
     print(f"Generated melody: {new_melody}")
