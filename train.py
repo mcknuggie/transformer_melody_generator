@@ -33,12 +33,13 @@ from keras.optimizers import Adam
 from melodyPreprocessor import MelodyPreprocessor
 from transformer import Transformer
 from melodyGenerator import MelodyGenerator
+from midiPreprocessor import MidiPreprocessor
 from keras.preprocessing.text import Tokenizer
 
 # Global parameters
-EPOCHS = 3
+EPOCHS = 1
 BATCH_SIZE = 32
-DATA_PATH = "essenDataset.json"
+DATA_PATH = "prepped_midi/test_output.txt"
 MAX_POSITIONS_IN_POSITIONAL_ENCODING = 1500
 
 # Loss function and optimizer
@@ -193,9 +194,13 @@ def create_look_ahead_mask(size):
 
 
 if __name__ == "__main__":
-    melody_preprocessor = MelodyPreprocessor(DATA_PATH, batch_size=BATCH_SIZE)
-    train_dataset = melody_preprocessor.create_training_dataset()
-    vocab_size = melody_preprocessor.number_of_tokens_with_padding
+    # Select your preprocessor
+
+    # preprocessor = MelodyPreprocessor(DATA_PATH, batch_size=BATCH_SIZE)
+    preprocessor = MidiPreprocessor(DATA_PATH, batch_size=BATCH_SIZE)
+
+    train_dataset = preprocessor.create_training_dataset()
+    vocab_size = preprocessor.number_of_tokens_with_padding
 
     transformer_model = Transformer(
         num_layers=2,
@@ -211,4 +216,6 @@ if __name__ == "__main__":
 
     train(train_dataset, transformer_model, EPOCHS)
 
-    transformer_model.save("essen_model_3_epochs_lookahead_mask")
+    # transformer_model.fit(self.window.train, epochs=1, validation_data=self.window.val)
+
+    transformer_model.save("test_midi_model")

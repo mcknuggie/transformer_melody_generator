@@ -1,5 +1,6 @@
 from mido import MidiFile
 import os
+import json
 
 
 def get_note_information(midi_file_path):
@@ -47,14 +48,6 @@ def get_note_information(midi_file_path):
 
     return midi_tracks
 
-def write_tuples_to_file(tuples, file_path):
-    with open(file_path, "a") as file:
-        for t in tuples:
-            line = "; ".join(
-                map(str, t)
-            )  # Convert each element to string and join them with a semi-colon
-            file.write(line + "\n")
-
 
 # def write_midi_info_to_file(input_file_path, output_file_path):
 #     midi_file = MidiFile(input_file_path)
@@ -65,16 +58,61 @@ def write_tuples_to_file(tuples, file_path):
 #                 file.write(line + "\n")
 
 
-def process_folder(folder_path):
+def process_folder(folder_path, output_file):
     # Iterate through all files in the current folder
     for root, dirs, files in os.walk(folder_path):
         for i in range(len(files)):
             file_path = os.path.join(root, files[i])
             tuples = get_note_information(file_path)
-            write_tuples_to_file(tuples, "prepped_midi/test_output.txt")
+            write_tuples_to_file(tuples, output_file)
+
+def write_tuples_to_file(tuples, file_path):
+    with open(file_path, "a") as file:
+        for t in tuples:
+            line = "; ".join(
+                map(str, t)
+            )  # Convert each element to string and join them with a semi-colon
+            file.write(line + "\n")
+
+
+# def process_folder(folder_path, output_file):
+#     # Iterate through all files in the current folder
+#     for root, dirs, files in os.walk(folder_path):
+#         for i in range(len(files)):
+#             file_path = os.path.join(root, files[i])
+#             tuples = get_note_information(file_path)
+#             write_tuples_to_json(tuples, output_file)
+
+
+# def write_tuples_to_json(tuples, file_path):
+#     with open(file_path, "a") as file:
+#         for t in tuples:
+#             json_str = json.dumps(t)
+#             file.write(json_str + "\n")
+
+
+# def process_folder(folder_path, output_file):
+#     all_data = []
+#     # Iterate through all files in the current folder
+#     for root, dirs, files in os.walk(folder_path):
+#         for i in range(len(files)):
+#             file_path = os.path.join(root, files[i])
+#             tuples = get_note_information(file_path)
+#             all_data.extend(tuples)
+
+#     # Write all_data to a single JSON object in the output file
+#     write_data_to_json(all_data, output_file)
+
+
+# def write_data_to_json(data, file_path):
+#     with open(file_path, "w") as file:
+#         json.dump(data, file)
+
 
 if __name__ == "__main__":
 
     # To run on entire dataset folder
     folder_to_process = "test_dataset_folder"
-    process_folder(folder_to_process)
+    output_file = "prepped_midi/test_output.txt"
+
+    process_folder(folder_to_process, output_file)
