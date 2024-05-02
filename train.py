@@ -35,12 +35,13 @@ from transformer import Transformer
 from melodyGenerator import MelodyGenerator
 from midiPreprocessor import MidiPreprocessor
 from keras.preprocessing.text import Tokenizer
+from keras.layers import TextVectorization
 
 # Global parameters
 EPOCHS = 1
 BATCH_SIZE = 32
 DATA_PATH = "prepped_midi/test_output.txt"
-MAX_POSITIONS_IN_POSITIONAL_ENCODING = 1500
+MAX_POSITIONS_IN_POSITIONAL_ENCODING = 6000
 
 # Loss function and optimizer
 sparse_categorical_crossentropy = SparseCategoricalCrossentropy(
@@ -218,4 +219,4 @@ if __name__ == "__main__":
 
     # transformer_model.fit(self.window.train, epochs=1, validation_data=self.window.val)
 
-    transformer_model.save("test_midi_model")
+    transformer_model.save("model_midi_separated_tokens")

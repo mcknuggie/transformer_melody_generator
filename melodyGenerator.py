@@ -65,7 +65,7 @@ class MelodyGenerator:
             str: The generated melody
         """
         input_tensor = self._get_input_tensor(start_sequence)
-
+        tf.print("input_tensor: ", input_tensor)
         num_notes_to_generate = self.max_length - len(input_tensor[0])
 
         for _ in range(num_notes_to_generate):
@@ -89,7 +89,9 @@ class MelodyGenerator:
         Returns:
             input_tensor (tf.Tensor): The input tensor for the model
         """
+        print("start_sequence: ", start_sequence)
         input_sequence = self.tokenizer.texts_to_sequences([start_sequence])
+        print("input_sequence: ", input_sequence)
         input_tensor = tf.convert_to_tensor(input_sequence, dtype=tf.int64)
         return input_tensor
 

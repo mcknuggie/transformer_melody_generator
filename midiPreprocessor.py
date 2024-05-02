@@ -4,6 +4,7 @@ import json
 import numpy as np
 import tensorflow as tf
 from keras.preprocessing.text import Tokenizer
+from keras.layers import TextVectorization
 
 
 class MidiPreprocessor:
@@ -23,6 +24,7 @@ class MidiPreprocessor:
         self.dataset_path = dataset_path
         self.batch_size = batch_size
         self.tokenizer = Tokenizer(filters="", lower=False, split=",")
+        # self.tokenizer = TextVectorization()
         self.max_melody_length = None
         self.number_of_tokens = None
 
@@ -48,28 +50,33 @@ class MidiPreprocessor:
             to-sequnce model
         """
         dataset = self._load_dataset()
-        parsed_melodies = [self._parse_melody(melody) for melody in dataset]
-        tokenized_melodies = self._tokenize_and_encode_melodies(parsed_melodies)
-        self._set_max_melody_length(tokenized_melodies)
+        parsed_songs = [self._parse_melody(song) for song in dataset]
+        cleaned_songs = [self._clean_melody(song) for song in parsed_songs]
+        # print(cleaned_songs)
+        separated_midi_songs = self._separate_midi_notes(cleaned_songs)
+        # print(separated_midi_songs)
+        tokenized_songs = self._tokenize_and_encode_melodies(separated_midi_songs)
+        self._set_max_melody_length(tokenized_songs)
         self._set_number_of_tokens()
         input_sequences, target_sequences = self._create_sequence_pairs(
-            tokenized_melodies
+            tokenized_songs
         )
         tf_training_dataset = self._convert_to_tf_dataset(
             input_sequences, target_sequences
         )
         return tf_training_dataset
 
-    # def _load_dataset(self):
-    #     """
-    #     Loads the melody dataset from a JSON file
+    def _separate_midi_notes(self, songs):     
+        separated_songs = [] # a list of songs where each song is a list of notes but the inidividual note features are separated
+        for song in songs:
+            separated_song = [] # a single song represented by a bunch of individual note features
+            for note in song:
+                note_components = note.split()
+                separated_song.extend(note_components)
 
-    #     Returns:
-    #         list: A list of melodies from the dataset
-    #     """
+            separated_songs.append(separated_song)
 
-    #     with open(self.dataset_path, "r") as f:
-    #         return json.load(f)
+        return separated_songs
 
     def _load_dataset(self):
         """
@@ -95,12 +102,32 @@ class MidiPreprocessor:
         """
         return melody_str.split("; ")
 
+    def _clean_melody(self, note_list):
+        """
+        Removes () and , from melodies for easier processing
+
+        Parameters:
+            melody_str (str): A List of strs each representing a note
+
+        Returns:
+            list: a cleaned list of strs, each representing a clean note
+        """
+        cleaned_note_list = []
+
+        for note_str in note_list:
+            my_str = note_str.replace("(", "")
+            my_str = my_str.replace(")", "")
+            my_str = my_str.replace(",", "")
+            cleaned_note_list.append(my_str)
+
+        return cleaned_note_list
+
     def _tokenize_and_encode_melodies(self, melodies):
         """
         Tokenize and encodes a list of melodies.
 
         Parameters:
-            melodies (list): A list of melodies to be tokenized and encoded
+            melodies (list): A list of melodies (in other words: a list of lists of strings where each string contains a MIDI note) to be tokenized and encoded
 
         Returns:
             tokenized_melodies: A list of tokenized and encoded melodies

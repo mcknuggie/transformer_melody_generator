@@ -64,7 +64,8 @@ def process_folder(folder_path, output_file):
         for i in range(len(files)):
             file_path = os.path.join(root, files[i])
             tuples = get_note_information(file_path)
-            write_tuples_to_file(tuples, output_file)
+            print(tuples)
+            # write_tuples_to_file(tuples, output_file)
 
 def write_tuples_to_file(tuples, file_path):
     with open(file_path, "a") as file:
